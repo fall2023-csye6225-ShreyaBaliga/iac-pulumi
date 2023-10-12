@@ -1,0 +1,20 @@
+encryptionsalt: v1:rFhcIrzVdas=:v1:R3I801WQ4eVTwuwv:U82AX4ceWPBORXT0UqQR+U7W7D/5fw==
+config:
+  aws:profile: dev
+  aws:region: us-east-1
+  iac-pulumi:awsRegion: us-east-1
+  iac-pulumi:numPrivateSubnets: "3"
+  iac-pulumi:numPublicSubnets: "3"
+  iac-pulumi:baseCIDR: "10.0.0.0/16"
+  iac-pulumi:destinationCidrBlock: "0.0.0.0/0"
+  iac-pulumi:subnetCidr:
+    - "10.0.1.0/24"
+    - "10.0.2.0/24"
+    - "10.0.3.0/24"
+    - "10.0.4.0/24"
+    - "10.0.5.0/24"
+    - "10.0.6.0/24"
+    - "10.0.7.0/24"
+    - "10.0.8.0/24"
+    - "10.0.9.0/24"
+    
