@@ -1,8 +1,14 @@
-
+require('dotenv').config();
 const pulumi = require("@pulumi/pulumi");
 const aws = require("@pulumi/aws");
+const fs = require("fs");
+// const privateKeyPath = process.env.PRIVATE_KEY_PATH;
+// const publicKeyContent = process.env.PUBLIC_KEY_CONTENT;
 
-const config = new pulumi.Config();
+
+const config = new pulumi.Config(); 
+const keyName = config.require("aws-ec2-keyName");
+
 var SubnetCIDRAdviser = require( 'subnet-cidr-calculator' );
  // Get the AWS region from the Pulumi configuration
  const awsRegion = config.require("awsRegion");
@@ -42,6 +48,14 @@ async function createVPC() {
     // Define the number of public and private subnets to create
     let numPublicSubnets = config.require("numPublicSubnets");
     let numPrivateSubnets = config.require("numPrivateSubnets");
+    const ami = config.require( "custom_ami");
+    const instance_type = config.require("instance_type");
+    const ssh_port = config.require("ssh_port");
+    const http_port = config.require("http_port");
+    const https_port = config.require("https_port");
+    const custom_port = config.require("custom_port");
+    const volumeSize = config.require("volume_size");
+    const volumeType = config.require("volume_type");
     const n = Math.min(numAZs,numPublicSubnets);
     // Create subnets in each Availability Zone
     const publicSubnets = [];
@@ -115,8 +129,63 @@ async function createVPC() {
             routeTableId: privateRouteTable.id,
         });
     }
-    console.log(`numPublicSubnets: ${numPublicSubnets}`);
-console.log(`numPrivateSubnets: ${numPrivateSubnets}`);
+      // Create an Application Security Group for your EC2 instances
+      const applicationSecurityGroup = new aws.ec2.SecurityGroup("applicationSecurityGroup", {
+        vpcId: vpc.id,
+        tags:{
+
+            Name: "customAG",
+
+        },
+        ingress: [
+            {
+                protocol: "tcp",
+                fromPort: ssh_port,
+                toPort: ssh_port,
+                cidrBlocks: [destinationCidrBlock],
+            },
+            {
+                protocol: "tcp",
+                fromPort: http_port,
+                toPort: http_port,
+                cidrBlocks: [destinationCidrBlock],
+            },
+            {
+                protocol: "tcp",
+                fromPort: https_port,
+                toPort: https_port,
+                cidrBlocks: [destinationCidrBlock],
+            },
+            {
+                protocol: "tcp",
+                fromPort: custom_port, // Replace with the port your application runs on
+                toPort: custom_port, // Replace with the port your application runs on
+                cidrBlocks: [destinationCidrBlock],
+            },
+        ],
+    });
+    // const privateKey = fs.readFileSync(privateKeyPath, "utf8");
+
+    // const keyPair = new aws.ec2.KeyPair("myKeyPair", {
+    //     publicKey: publicKeyContent,
+    //     //privateKey: privateKey,
+    // });
+    //const keyPairName = ec2_keyPair
+    // Create the EC2 instance
+    const ec2Instance = new aws.ec2.Instance("myEC2Instance", {
+        ami: ami, // Replace with your custom AMI ID
+        instanceType: instance_type, // Replace with your instance type
+        subnetId: publicSubnets[0].id, // Use a public subnet
+        securityGroups: [applicationSecurityGroup.id],
+        rootBlockDevice: {
+            volumeSize: volumeSize, // Root volume size
+            volumeType: volumeType, // General Purpose SSD (GP2)
+            deleteOnTermination: true,
+        },
+        associatePublicIpAddress: true,
+        keyName: keyName,
+        disableApiTermination:false
+    });
     // Export VPC and subnets for future use
     return {
         
@@ -126,6 +195,8 @@ console.log(`numPrivateSubnets: ${numPrivateSubnets}`);
         numAZs: numAZs,
         numPublicSubnets: numPublicSubnets, // Include numPublicSubnets
         numPrivateSubnets: numPrivateSubnets, // Include numPrivateSubnets
+        applicationSecurityGroup:applicationSecurityGroup,
+        ec2InstanceId: ec2Instance.id, 
         
     };
 }
