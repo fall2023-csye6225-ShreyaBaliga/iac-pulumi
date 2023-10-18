@@ -9,7 +9,7 @@ const fs = require("fs");
 const config = new pulumi.Config(); 
 const keyName = config.require("aws-ec2-keyName");
 
-var SubnetCIDRAdviser = require( 'subnet-cidr-calculator' );
+//var SubnetCIDRAdviser = require( 'subnet-cidr-calculator' );
  // Get the AWS region from the Pulumi configuration
  const awsRegion = config.require("awsRegion");
  const baseCIDR = config.get("baseCIDR");
@@ -17,7 +17,7 @@ var SubnetCIDRAdviser = require( 'subnet-cidr-calculator' );
 
 var base = baseCIDR.split('/');
 
-var probableSubnets = SubnetCIDRAdviser.calculate(base[0],base[1]);
+//var probableSubnets = SubnetCIDRAdviser.calculate(base[0],base[1]);
 
 async function createVPC() {
    
@@ -61,7 +61,8 @@ async function createVPC() {
     const publicSubnets = [];
     const privateSubnets = [];
    // Access the list of CIDR blocks
-   const subnetCIDRs = config.getObject("subnetCidr");
+   const publicSubnetCIDRs = config.getObject("publicSubnetCidr");
+   const privateSubnetCIDRs = config.getObject("privateSubnetCidr");
    for (let i = 0; i < n; i++) {
     const azIndex = i % n; // Calculate the AZ index
     //const subnetCIDR = subnetCIDRs[i];
@@ -70,7 +71,7 @@ async function createVPC() {
     if (i < numPublicSubnets) {
         const publicSubnet = new aws.ec2.Subnet(`publicSubnet${i}`, {
             vpcId: vpc.id,
-            cidrBlock: probableSubnets.subnets[i*2].value,
+            cidrBlock: publicSubnetCIDRs[i],
             availabilityZone: zones.names[azIndex],
             mapPublicIpOnLaunch: true,
             tags: {
@@ -84,7 +85,7 @@ async function createVPC() {
     if (i < numPrivateSubnets) {
         const privateSubnet = new aws.ec2.Subnet(`privateSubnet${i}`, {
             vpcId: vpc.id,
-            cidrBlock: probableSubnets.subnets[i*2+1].value,
+            cidrBlock: privateSubnetCIDRs[i],
             availabilityZone: zones.names[azIndex],
             tags: {
                 Name: `privateSubnet${i}`,
