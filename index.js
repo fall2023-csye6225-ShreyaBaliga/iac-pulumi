@@ -1,4 +1,3 @@
-require('dotenv').config();
 const pulumi = require("@pulumi/pulumi");
 const aws = require("@pulumi/aws");
 const fs = require("fs");
