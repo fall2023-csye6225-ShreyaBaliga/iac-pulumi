@@ -1,13 +1,24 @@
-const pulumi = require("@pulumi/pulumi");
+const pulumi = require ("@pulumi/pulumi");
 const aws = require("@pulumi/aws");
 const fs = require("fs");
+//const awsRDS = require("@pulumi/aws-rds");
+
+//const host= "localhost";
+
+
+
 // const privateKeyPath = process.env.PRIVATE_KEY_PATH;
 // const publicKeyContent = process.env.PUBLIC_KEY_CONTENT;
 
 
 const config = new pulumi.Config(); 
 const keyName = config.require("aws-ec2-keyName");
-
+const dbEngine = config.require("dbEngine"); 
+const dbInstanceClass = config.require("dbInstanceClass"); // Replace with your desired instance class
+const dbName = config.require("dbName"); // Replace with your desired database name
+const masterUsername = config.require("masterUsername"); // Replace with your desired master username
+const masterPassword = config.require("masterPassword"); // Replace with your desired master password
+const port = config.require("port");
 //var SubnetCIDRAdviser = require( 'subnet-cidr-calculator' );
  // Get the AWS region from the Pulumi configuration
  const awsRegion = config.require("awsRegion");
@@ -163,7 +174,45 @@ async function createVPC() {
                 cidrBlocks: [destinationCidrBlock],
             },
         ],
+        egress:
+        [
+            {
+            protocol: "tcp",
+            fromPort: port,
+            toPort:port,
+            cidrBlocks:[destinationCidrBlock]
+            }
+
+        ]
+       
     });
+    // Create the RDS database security group
+const dbSecurityGroup = new aws.ec2.SecurityGroup("dbSecurityGroup", {
+    vpcId: vpc.id,
+    tags: {
+        Name: "databaseSecurityGroup",
+    },
+    ingress: [
+        {
+            protocol: "tcp",
+            fromPort: port, // Postgres
+            toPort: port,
+            securityGroups: [applicationSecurityGroup.id],
+        },
+    ],
+});
+const dbParameterGroup = new aws.rds.ParameterGroup("my-db-parameter-group", {
+    vpcId:vpc.id,
+    family: "postgres14", 
+    // parameters: [
+    //     {
+    //         name: "max_connections",
+    //         value: "100",
+    //     },
+      
+    //],
+});
+
     // const privateKey = fs.readFileSync(privateKeyPath, "utf8");
 
     // const keyPair = new aws.ec2.KeyPair("myKeyPair", {
@@ -172,7 +221,31 @@ async function createVPC() {
     // });
     //const keyPairName = ec2_keyPair
     // Create the EC2 instance
+  
+    const dbSubnetGroup = new aws.rds.SubnetGroup("my-db-subnet-group", {
+        subnetIds: privateSubnets.map((subnet) => subnet.id),
+        // Add any other necessary properties here
+    });
+    
+    const rdsInstance = new aws.rds.Instance("my-rds-instance", {
+        allocatedStorage: 10, // Customize allocated storage
+        storageType: "gp2", // Customize storage type
+        engine: dbEngine, // Use "postgres" for PostgreSQL
+        engineVersion: "14.7", // Customize the PostgreSQL version
+        instanceClass: dbInstanceClass, // Use the desired instance class
+        username: masterUsername, // Use the master username
+        password: masterPassword, // Use the master password
+        parameterGroupName:dbParameterGroup.Name, // Associate the custom parameter group
+        vpcSecurityGroupIds: [dbSecurityGroup.id],
+        skipFinalSnapshot: true, // Customize as needed
+        publiclyAccessible: false, // Set to true only if needed
+        dbName:dbName,
+        multiAz:false,
+        dbSubnetGroupName:dbSubnetGroup.name,
+        //subnetId: privateSubnets[0].id,
+    });
     const ec2Instance = new aws.ec2.Instance("myEC2Instance", {
+        vpcId:vpc.id,
         ami: ami, // Replace with your custom AMI ID
         instanceType: instance_type, // Replace with your instance type
         subnetId: publicSubnets[0].id, // Use a public subnet
@@ -184,8 +257,20 @@ async function createVPC() {
         },
         associatePublicIpAddress: true,
         keyName: keyName,
-        disableApiTermination:false
+        disableApiTermination:false,
+        userData: pulumi.interpolate `#!/bin/bash
+        echo "DB_HOST=${rdsInstance.address}" >> /etc/environment
+        echo "DB_USER=${rdsInstance.username}" >> /etc/environment
+        echo "DB_PASSWORD=${rdsInstance.password}" >> /etc/environment
+        echo "DB_PORT=${rdsInstance.port}" >> /etc/environment
+        echo "DB_DATABASE=${rdsInstance.dbName}" >> /etc/environment
+        sudo systemctl daemon-reload
+        sudo systemctl enable webapp
+        sudo systemctl restart webapp
+        `
+        
     });
+
     // Export VPC and subnets for future use
     return {
         
@@ -196,7 +281,11 @@ async function createVPC() {
         numPublicSubnets: numPublicSubnets, // Include numPublicSubnets
         numPrivateSubnets: numPrivateSubnets, // Include numPrivateSubnets
         applicationSecurityGroup:applicationSecurityGroup,
+        dbSecurityGroup:dbSecurityGroup,
+        dbParameterGroup: dbParameterGroup, // Add the parameter group here
         ec2InstanceId: ec2Instance.id, 
+        rdsInstance: rdsInstance, // Add the RDS instance here
+        
         
     };
 }

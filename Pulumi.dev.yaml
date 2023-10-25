@@ -5,7 +5,7 @@ config:
   iac-pulumi:aws-ec2-keyName: ec2_keyPair
   iac-pulumi:awsRegion: us-east-1
   iac-pulumi:baseCIDR: "10.0.0.0/16"
-  iac-pulumi:custom_ami: "ami-0c87318997dc53928"
+  iac-pulumi:custom_ami: "ami-0c7bd2133a4e43a26"
   iac-pulumi:custom_port: "3000"
   iac-pulumi:destinationCidrBlock: "0.0.0.0/0"
   iac-pulumi:http_port: "80"
@@ -27,3 +27,9 @@ config:
   iac-pulumi:ssh_port: "22"
   iac-pulumi:volume_size: "25"
   iac-pulumi:volume_type: "gp2"
+  iac-pulumi:dbEngine : "postgres"
+  iac-pulumi:dbInstanceClass : "db.t3.micro"
+  iac-pulumi:dbName : "csye6225"
+  iac-pulumi:masterUsername: "csye6225"
+  iac-pulumi:masterPassword: "munnipammi"
+  iac-pulumi:port: "5432"
