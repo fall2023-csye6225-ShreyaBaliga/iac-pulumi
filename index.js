@@ -66,6 +66,13 @@ async function createVPC() {
     const custom_port = config.require("custom_port");
     const volumeSize = config.require("volume_size");
     const volumeType = config.require("volume_type");
+    const eport = config.require("eport");
+    const policyArn = config.require("policyArn");
+    const ttl= config.require("ttl");
+    const zoneName=config.require("zoneName");
+    const zoneId=config.require("zoneId");
+    const recordType=config.require("recordType");
+
     const n = Math.min(numAZs,numPublicSubnets);
     // Create subnets in each Availability Zone
     const publicSubnets = [];
@@ -177,9 +184,9 @@ async function createVPC() {
         egress:
         [
             {
-            protocol: "tcp",
-            fromPort: port,
-            toPort:port,
+            protocol: "-1",
+            fromPort: eport,
+            toPort:eport,
             cidrBlocks:[destinationCidrBlock]
             }
 
@@ -244,12 +251,39 @@ const dbParameterGroup = new aws.rds.ParameterGroup("my-db-parameter-group", {
         dbSubnetGroupName:dbSubnetGroup.name,
         //subnetId: privateSubnets[0].id,
     });
+    // IAM Role for EC2 instance
+const instanceRole = new aws.iam.Role("EC2-CSYE6225", {
+    assumeRolePolicy: JSON.stringify({
+        Version: "2012-10-17",
+        Statement: [{
+            Action: "sts:AssumeRole",
+            Effect: "Allow",
+            Principal: {
+                Service: "ec2.amazonaws.com",
+            },
+        }],
+    }),
+    tags: {
+        "tag-key": "tag-value",
+    },
+});
+// IAM Role Policy Attachment
+const rolePolicyAttachment = new aws.iam.RolePolicyAttachment("CloudWatchSampleAttachment", {
+    policyArn: policyArn,
+    role: instanceRole.name,
+});
+// IAM Instance Profile
+const instanceProfile = new aws.iam.InstanceProfile("ec2_profile", {
+    name: "ec2_profile",
+    role: instanceRole.name,
+});
     const ec2Instance = new aws.ec2.Instance("myEC2Instance", {
         vpcId:vpc.id,
         ami: ami, // Replace with your custom AMI ID
         instanceType: instance_type, // Replace with your instance type
         subnetId: publicSubnets[0].id, // Use a public subnet
         securityGroups: [applicationSecurityGroup.id],
+        iamInstanceProfile: instanceProfile.name,
         rootBlockDevice: {
             volumeSize: volumeSize, // Root volume size
             volumeType: volumeType, // General Purpose SSD (GP2)
@@ -264,12 +298,27 @@ const dbParameterGroup = new aws.rds.ParameterGroup("my-db-parameter-group", {
         echo "DB_PASSWORD=${rdsInstance.password}" >> /etc/environment
         echo "DB_PORT=${rdsInstance.port}" >> /etc/environment
         echo "DB_DATABASE=${rdsInstance.dbName}" >> /etc/environment
+        sudo chown -R csye6225:csye6225 /opt/csye6225/combined.log
+        sudo chmod -R 770 -R /opt/csye6225/combined.log
         sudo systemctl daemon-reload
         sudo systemctl enable webapp
         sudo systemctl restart webapp
+        
+        sudo ../../../opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/home/admin/webapp/cloudwatch-config.json -s
+        sudo systemctl restart amazon-cloudwatch-agent
         `
         
     });
+
+    
+// Create a Route53 A record
+const route53Record = new aws.route53.Record("myRoute53Record", {
+    name: zoneName,
+    records: [ec2Instance.publicIp], // The public IP of your EC2 instance
+    ttl: ttl, // Adjust TTL as needed
+    type:recordType,
+    zoneId: zoneId, // Replace with your Route53 zone ID
+});
 
     // Export VPC and subnets for future use
     return {
@@ -285,6 +334,12 @@ const dbParameterGroup = new aws.rds.ParameterGroup("my-db-parameter-group", {
         dbParameterGroup: dbParameterGroup, // Add the parameter group here
         ec2InstanceId: ec2Instance.id, 
         rdsInstance: rdsInstance, // Add the RDS instance here
+        route53Record:route53Record,
+        instanceRole:instanceRole,
+        rolePolicyAttachment:rolePolicyAttachment,
+        instanceProfile:instanceProfile
+
+
         
         
     };
