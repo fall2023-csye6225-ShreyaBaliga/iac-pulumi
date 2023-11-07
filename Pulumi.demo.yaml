@@ -5,7 +5,7 @@ config:
   iac-pulumi:aws-ec2-keyName: ec2_keyPair
   iac-pulumi:awsRegion: us-east-1
   iac-pulumi:baseCIDR: "10.0.0.0/16"
-  iac-pulumi:custom_ami: "ami-0c7bd2133a4e43a26"
+  iac-pulumi:custom_ami: "ami-07755d9341d5dd933"
   iac-pulumi:custom_port: "3000"
   iac-pulumi:destinationCidrBlock: "0.0.0.0/0"
   iac-pulumi:http_port: "80"

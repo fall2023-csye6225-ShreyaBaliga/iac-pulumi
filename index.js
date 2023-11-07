@@ -300,11 +300,13 @@ const instanceProfile = new aws.iam.InstanceProfile("ec2_profile", {
         echo "DB_DATABASE=${rdsInstance.dbName}" >> /etc/environment
         sudo chown -R csye6225:csye6225 /opt/csye6225/combined.log
         sudo chmod -R 770 -R /opt/csye6225/combined.log
+        sudo chown -R csye6225:csye6225 /opt/csye6225/webapp
+        sudo chmod -R 750 /opt/csye6225/webapp
         sudo systemctl daemon-reload
         sudo systemctl enable webapp
         sudo systemctl restart webapp
         
-        sudo ../../../opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/home/admin/webapp/cloudwatch-config.json -s
+        sudo ../../../opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/csye6225/webapp/cloudwatch-config.json -s
         sudo systemctl restart amazon-cloudwatch-agent
         `
         
