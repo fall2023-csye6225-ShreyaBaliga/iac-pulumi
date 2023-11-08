@@ -306,7 +306,7 @@ const instanceProfile = new aws.iam.InstanceProfile("ec2_profile", {
         sudo systemctl enable webapp.service
         sudo systemctl restart webapp.service
         
-        sudo ../../../opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/home/admin/webapp/cloudwatch-config.json -s
+        sudo ../../../opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/csye6225/webapp/cloudwatch-config.json -s
         sudo systemctl restart amazon-cloudwatch-agent
         `
         
