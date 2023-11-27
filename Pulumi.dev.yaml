@@ -2,6 +2,7 @@ encryptionsalt: v1:rFhcIrzVdas=:v1:R3I801WQ4eVTwuwv:U82AX4ceWPBORXT0UqQR+U7W7D/5
 config:
   aws:profile: dev
   aws:region: us-east-1
+  gcp:iac-pulumi: silken-setting-405701
   iac-pulumi:aws-ec2-keyName: ec2_keyPair
   iac-pulumi:awsRegion: us-east-1
   iac-pulumi:baseCIDR: "10.0.0.0/16"
@@ -39,4 +40,4 @@ config:
   iac-pulumi:recordType: "A"
   iac-pulumi:zoneName: "dev.shreyabaliga.me"
   iac-pulumi:zoneId: "Z0076382356IXDSI3PSV3"
-
+  iac-pulumi:githubReleaseUrl: "https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip"
