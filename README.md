@@ -42,3 +42,17 @@ Define configuration values in your Pulumi.dev.yaml file or an environment-speci
 # Step 8: Clean Up Resources (if needed)
 
      If you want to delete the cloud resources created by your Pulumi code, you can use the pulumi destroy command.
+
+# Command to import ZeroSSL Certificate to AWS Certificate Management
+ $certificateBase64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((Get-Content -Raw -Path 'path\to\certificate.crt')))
+ $privateKeyBase64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((Get-Content -Raw -Path 'path\to\private.key')))
+ $ca_bundleBase64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((Get-Content -Raw -Path 'path\to\ca_bundle.crt')))
+
+
+aws acm import-certificate --certificate "$certificateBase64" --private-key "$privateKeyBase64" --region us-east-1 --certificate-chain "$ca_bundleBase64"
+
+
+
+
+
+
