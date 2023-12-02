@@ -2,18 +2,27 @@ encryptionsalt: v1:rFhcIrzVdas=:v1:R3I801WQ4eVTwuwv:U82AX4ceWPBORXT0UqQR+U7W7D/5
 config:
   aws:profile: dev
   aws:region: us-east-1
-  gcp:iac-pulumi: silken-setting-405701
+  gcp:project: silken-setting-405701
   iac-pulumi:aws-ec2-keyName: ec2_keyPair
   iac-pulumi:awsRegion: us-east-1
   iac-pulumi:baseCIDR: "10.0.0.0/16"
-  iac-pulumi:custom_ami: "ami-0210fc8a4f8453051"
+  iac-pulumi:custom_ami: "ami-07760fd65cd647db7"
   iac-pulumi:custom_port: "3000"
+  iac-pulumi:dbEngine: "postgres"
+  iac-pulumi:dbInstanceClass: "db.t3.micro"
+  iac-pulumi:dbName: "csye6225"
   iac-pulumi:destinationCidrBlock: "0.0.0.0/0"
+  iac-pulumi:eport: "0"
+  iac-pulumi:githubReleaseUrl: "https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip"
   iac-pulumi:http_port: "80"
   iac-pulumi:https_port: "443"
   iac-pulumi:instance_type: "t2.micro"
+  iac-pulumi:masterPassword: "munnipammi"
+  iac-pulumi:masterUsername: "csye6225"
   iac-pulumi:numPrivateSubnets: "3"
   iac-pulumi:numPublicSubnets: "3"
+  iac-pulumi:policyArn: "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  iac-pulumi:port: "5432"
   iac-pulumi:privateSubnetCidr:
     - "10.0.5.0/24"
     - "10.0.6.0/24"
@@ -25,19 +34,10 @@ config:
     - "10.0.2.0/24"
     - "10.0.3.0/24"
     - "10.0.4.0/24"
+  iac-pulumi:recordType: "A"
   iac-pulumi:ssh_port: "22"
+  iac-pulumi:ttl: "300"
   iac-pulumi:volume_size: "25"
   iac-pulumi:volume_type: "gp2"
-  iac-pulumi:dbEngine : "postgres"
-  iac-pulumi:dbInstanceClass : "db.t3.micro"
-  iac-pulumi:dbName : "csye6225"
-  iac-pulumi:masterUsername: "csye6225"
-  iac-pulumi:masterPassword: "munnipammi"
-  iac-pulumi:port: "5432"
-  iac-pulumi:eport: "0"
-  iac-pulumi:policyArn: "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-  iac-pulumi:ttl: "300"
-  iac-pulumi:recordType: "A"
-  iac-pulumi:zoneName: "dev.shreyabaliga.me"
   iac-pulumi:zoneId: "Z0076382356IXDSI3PSV3"
-  iac-pulumi:githubReleaseUrl: "https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip"
+  iac-pulumi:zoneName: "dev.shreyabaliga.me"
