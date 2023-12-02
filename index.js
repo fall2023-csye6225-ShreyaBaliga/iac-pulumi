@@ -224,16 +224,35 @@ const albTargetGroup = new aws.lb.TargetGroup("albTargetGroup", {
     },
     deregistrationDelay:500
 });
-const albHttpListener = new aws.lb.Listener("albHttpListener", {
-    loadBalancerArn: applicationLoadBalancer.arn, // Replace with your load balancer ARN
-    port: http_port,
-    protocol: "HTTP",
+// const albHttpListener = new aws.lb.Listener("albHttpListener", {
+//     loadBalancerArn: applicationLoadBalancer.arn, // Replace with your load balancer ARN
+//     port: http_port,
+//     protocol: "HTTP",
+//     defaultActions: [
+//         {
+//             type: "forward",
+//             targetGroupArn: albTargetGroup.arn,
+//         },
+//     ],
+// });
+
+const albHttpsListener = new aws.lb.Listener("albHttpsListener", {
+    loadBalancerArn: applicationLoadBalancer.arn,
+    port: 443,
+    protocol: "HTTPS",
+    sslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06",
     defaultActions: [
         {
             type: "forward",
             targetGroupArn: albTargetGroup.arn,
+            // fixedResponse: {
+            //     contentType: "application/json",
+            //     statusCode: "200",
+                // messageBody: "OK",
+            //},
         },
     ],
+    certificateArn: "arn:aws:acm:us-east-1:065889916706:certificate/5f20cde7-e583-4eec-98a4-2767baf4fbd6", // Replace with your ACM certificate ARN
 });
 
 
@@ -633,6 +652,7 @@ const snsPolicyAttachment = new aws.iam.RolePolicyAttachment("snsPolicy", {
   const base64EncodedData = pulumi.output(userDataString).apply((script)=>Buffer.from(script).toString('base64'));
     
     const launchTemplate = new aws.ec2.LaunchTemplate("app_server", {
+        name: "launch_template",
         imageId: ami,
         instanceType: instance_type,
         keyName: keyName,
@@ -781,7 +801,7 @@ const route53Record = new aws.route53.Record("myRoute53Record", {
         loadBalancerSecurityGroup:loadBalancerSecurityGroup,
         applicationLoadBalancer:applicationLoadBalancer,
         albTargetGroup:albTargetGroup,
-        albHttpListener:albHttpListener,
+        albHttpsListener:albHttpsListener,
         launchTemplate:launchTemplate,
         autoScalingGroup:autoScalingGroup,
         scaleUpPolicy:scaleUpPolicy,
@@ -803,6 +823,7 @@ const route53Record = new aws.route53.Record("myRoute53Record", {
         lambdaRolePolicy2:lambdaRolePolicy2,
         lambdaFunction:lambdaFunction,
         sesPolicy:sesPolicy,
+        albHttpsListener:albHttpsListener
        
 
 
@@ -813,4 +834,5 @@ const route53Record = new aws.route53.Record("myRoute53Record", {
 }
 
 module.exports = createVPC;
+
 

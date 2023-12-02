@@ -1,4 +1,4 @@
-encryptionsalt: v1:rFhcIrzVdas=:v1:R3I801WQ4eVTwuwv:U82AX4ceWPBORXT0UqQR+U7W7D/5fw==
+encryptionsalt: v1:Mb9WvDsXy+c=:v1:MOqwF1LYvAUreeh7:MtRXWDPYOdtbeaowRt8gNhjJ5VWj4w==
 config:
   aws:profile: demo
   aws:region: us-east-1
@@ -6,13 +6,14 @@ config:
   iac-pulumi:aws-ec2-keyName: ec2_keyPair
   iac-pulumi:awsRegion: us-east-1
   iac-pulumi:baseCIDR: "10.0.0.0/16"
-  iac-pulumi:custom_ami: "ami-0619dd39a1e0ac7e3"
+  iac-pulumi:custom_ami: "ami-07760fd65cd647db7"
   iac-pulumi:custom_port: "3000"
   iac-pulumi:dbEngine: "postgres"
   iac-pulumi:dbInstanceClass: "db.t3.micro"
   iac-pulumi:dbName: "csye6225"
   iac-pulumi:destinationCidrBlock: "0.0.0.0/0"
   iac-pulumi:eport: "0"
+  iac-pulumi:githubReleaseUrl: "https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip"
   iac-pulumi:http_port: "80"
   iac-pulumi:https_port: "443"
   iac-pulumi:instance_type: "t2.micro"
@@ -40,4 +41,3 @@ config:
   iac-pulumi:volume_type: "gp2"
   iac-pulumi:zoneId: "Z0295076307JQZM5MLDB3"
   iac-pulumi:zoneName: "demo.shreyabaliga.me"
-  iac-pulumi:githubReleaseUrl: "https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip"
