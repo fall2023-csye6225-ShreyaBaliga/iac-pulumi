@@ -51,6 +51,10 @@ Define configuration values in your Pulumi.dev.yaml file or an environment-speci
 
 aws acm import-certificate --certificate "$certificateBase64" --private-key "$privateKeyBase64" --region us-east-1 --certificate-chain "$ca_bundleBase64"
 
+                                         OR
+aws acm import-certificate --certificate "fileb://./certificate.crt" --private-key "fileb://./private.key" --certificate-chain "fileb://./ca_bundle.crt"  --region us-east-1
+
+
 
 
 
